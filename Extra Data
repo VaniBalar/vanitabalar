@@ -1,4 +1,7 @@
+*****************************
 Upload size incerese .htacess
+*****************************
+
 
 php_value upload_max_filesize 1024M
 php_value post_max_size 1024M
@@ -6,6 +9,23 @@ php_value memory_limit 1024M
 php_value max_execution_time 3000
 php_value max_input_time 3000
 
+
+*******************************************
+ * Disable new divi crazy crap code for CPT
+ *******************************************
+ 
+function disable_cptdivi()
+{
+        remove_action( 'wp_enqueue_scripts', 'et_divi_replace_stylesheet', 99999998 );
+}
+add_action('init', 'disable_cptdivi');
+
+
+**************************************
+remove divi class put in function file
+**************************************
+
+FUNCTION FILE
 
 /**
  * Disable new divi crazy crap code for CPT
