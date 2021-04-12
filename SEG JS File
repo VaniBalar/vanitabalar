@@ -1,0 +1,283 @@
+jQuery(document).ready(function () {
+	jQuery('img').removeAttr('title');
+});
+
+// Why Solar Page
+jQuery(document).ready(function () {
+	////// row 01 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_01").addClass("box_hover");
+        jQuery(".alternative_section .et_pb_row").addClass("box_hover_a");
+	    setTimeout(function(){
+			// jQuery('.box_hover .hide_para').css('display','block');
+		},1000);
+      },
+      function () {
+        jQuery(".alternative_section .et_pb_row").removeClass("box_hover_a");
+        jQuery(".why_solar_info_row_01").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_01 .hide_para').css('display','none');
+      }
+    );
+    ////// row 02 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_02").addClass("box_hover");
+      },
+      function () {
+        jQuery(".why_solar_info_row_02").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_02 .hide_para').css('display','none');
+      }
+    );
+    ////// row 03 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_03").addClass("box_hover");
+      },
+      function () {
+        jQuery(".why_solar_info_row_03").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_03 .hide_para').css('display','none');
+      }
+    );
+    ////// row 04 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_04").addClass("box_hover");
+      },
+      function () {
+        jQuery(".why_solar_info_row_04").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_04 .hide_para').css('display','none');
+      }
+    );
+    ////// row 05 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_05").addClass("box_hover");
+      },
+      function () {
+        jQuery(".why_solar_info_row_05").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_05 .hide_para').css('display','none');
+      }
+    );
+    ////// row 06 //////
+    jQuery(".alternative_section").hover(
+      function () {
+        jQuery(".why_solar_info_row_06").addClass("box_hover");
+      },
+      function () {
+        jQuery(".why_solar_info_row_06").removeClass("box_hover");
+		// jQuery('.why_solar_info_row_06 .hide_para').css('display','none');
+      }
+    );
+
+  });
+// END
+
+
+
+jQuery(document).ready(function(){
+    jQuery(".sfm-sidebar-close").append("<span class='close-line close-line1'></span>");
+    jQuery(".sfm-sidebar-close").append("<span class='close-line close-line2'></span>");
+});
+
+// create elements needed for the effect
+jQuery(document).ready(function(){
+    jQuery('.process_list a').each(function(){
+        jQuery(this).html('<span class="circle_data">'+ jQuery(this).html() +'</span><span class="circle"><span><em></em></span><span><em></em></span></span>');
+  });
+});
+
+// onload popup
+
+jQuery(document).ready(function () {
+	jQuery(document).ready(function(){
+		// console.log("working");
+	    setTimeout(function(){
+				jQuery('.main_popup').css('display','block'); 
+				  jQuery("body").addClass("z_index_body");
+
+		    },1000);
+		});
+});
+
+// session store onclick
+
+jQuery(document).ready(function (){
+	jQuery(".btn_state").on('click', function(){
+		// alert('hello');
+		jQuery(this).val();
+		console.log(jQuery(this).val());
+		
+	});
+});
+
+
+
+
+// Calculator section
+
+jQuery(document).ready(function (){
+
+	jQuery('#a_bill').keyup(function(){
+		var val = jQuery(this).val();
+		if(isNaN(val)){
+			val = val.replace(/[^0-9\.]/g,'');
+			if(val.split('.').length>2) 
+				val =val.replace(/\.+jQuery/,"");
+		}
+		jQuery(this).val(val); 
+	});
+	jQuery('#p_kwh').keyup(function(){
+		var val = jQuery(this).val();
+		if(isNaN(val)){
+			val = val.replace(/[^0-9\.]/g,'');
+			if(val.split('.').length>2) 
+				val =val.replace(/\.+jQuery/,"");
+		}
+		jQuery(this).val(val); 
+	});
+	jQuery('#ssize').keyup(function(){
+		var val = jQuery(this).val();
+		if(isNaN(val)){
+			val = val.replace(/[^0-9\.]/g,'');
+			if(val.split('.').length>2) 
+				val =val.replace(/\.+jQuery/,"");
+		}
+		jQuery(this).val(val); 
+	});
+
+	jQuery(".offer_cal_section .btn-cont button.cta-button.btn_hover").on('click', function(){
+		var a_bill = jQuery('#a_bill').val();
+		var p_kwh = jQuery('#p_kwh').val();
+		var upattern = jQuery('#upattern :selected').val();
+		var ssize = jQuery('#ssize').val();
+		// console.log(ssize);
+		var closest = jQuery('#closest :selected').val();
+
+
+		var avg_production = ssize*closest;
+		var y_saving = (avg_production*upattern/100)*p_kwh*365;
+		var ys_saving = y_saving*0.85*25;
+
+		if (a_bill.length == '' ||  p_kwh == '' || upattern == 'Your Usage Pattern' || ssize == '' || closest == 'Select The Closest City' ){
+			jQuery('.cla_warning').css('display','block');
+			jQuery(".offer_dis_inner").removeClass("offer_dis_inner_effect");
+
+		} else {
+
+			jQuery('.cla_warning').css('display','none');
+
+			if (jQuery(window).width() >= 981) {
+				setTimeout(function(){
+					jQuery(".offer_dis_inner").removeClass("offer_dis_inner_effect");
+				}, 500);
+
+				setTimeout(function(){
+					jQuery(".offer_dis_inner").addClass("offer_dis_inner_effect");
+
+					jQuery("#avg_production").html(avg_production.toFixed(0)).append("kw");
+					jQuery("#y_saving").html(y_saving.toFixed(2)).prepend("$");
+					jQuery("#ys_saving").html(ys_saving.toFixed(2)).prepend("$");
+				}, 1500);
+				//RESULT SECTION SHOW ON BTN CLICK
+			// jQuery(".offer_cal_result_section").fadeIn(5000);
+			//  var tabTop = jQuery(".offer_cal_result_section").offset().top;
+        	// 	jQuery("html, body").animate({ scrollTop:tabTop }, 2000);
+			//END RESULT SECTION SHOW ON BTN CLICK
+			}
+
+			else if (jQuery(window).width() >= 320 && jQuery(window).width() <= 980) {
+
+				jQuery("#avg_production_a").html(avg_production.toFixed(0));
+				jQuery("#y_saving_a").html(y_saving.toFixed(2));
+				jQuery("#ys_saving_a").html(ys_saving.toFixed(2));
+
+				jQuery(".modal").css("display", "flex");
+			}
+
+			var avg_production_sub = avg_production.toFixed(1);
+			var y_saving_sub = y_saving.toFixed(1);
+			var ys_saving_sub = ys_saving.toFixed(1);
+
+			
+			var str1 = "<li><span>";
+			var str2 = "</span></li>";
+
+			var avg_main = '';
+			var y_main = '';
+			var ys_main = '';
+
+			// for (i = 0; i < avg_production_sub.length; i++) {
+			// 	var avg = avg_production_sub.toString().charAt(i);
+			// 	var avg1 = str1.concat(avg);
+			// 	var avg2 = avg1.concat(str2);
+			// 	var avg_main = avg_main.concat(avg2);
+			// }
+			
+			// jQuery("#avg_production").html(avg_main);
+
+			// for (i = 0; i < y_saving_sub.length; i++) {
+			// 	var avg = y_saving_sub.toString().charAt(i);
+			// 	var avg1 = str1.concat(avg);
+			// 	var avg2 = avg1.concat(str2);
+			// 	var y_main = y_main.concat(avg2);
+			// }
+
+			// jQuery("#y_saving").html(y_main);
+
+			// for (i = 0; i < ys_saving_sub.length; i++) {
+			// 	var avg = ys_saving_sub.toString().charAt(i);
+			// 	var avg1 = str1.concat(avg);
+			// 	var avg2 = avg1.concat(str2);
+			// 	var ys_main = ys_main.concat(avg2);
+			// }
+
+			// jQuery("#ys_saving").html(ys_main);
+
+		}
+	});
+
+	jQuery('a#main_popup_close').click(function () {
+		jQuery(".modal").css("display", "none");
+	});
+});
+
+
+
+jQuery(document).on('ready', function () {
+	jQuery('.carousel_brand_logo_slider_box').slick({
+	  dots: false,
+	  infinite: true,
+	  arrows: true,
+	  autoplay:true,	
+	  autoplaySpeed:2000,
+	  slidesToShow: 4,
+	  slidesToScroll: 1,
+	  responsive: [
+		{
+		  breakpoint: 1025,
+		  settings: {
+			slidesToShow: 3,
+			slidesToScroll: 1,
+			arrows: true
+		  }
+		},
+		{
+		  breakpoint: 600,
+		  settings: {
+			slidesToShow: 2,
+			slidesToScroll: 1,
+			arrows: true
+		  }
+		},
+		{
+		  breakpoint: 481,
+		  settings: {
+			slidesToShow: 1,
+			slidesToScroll: 1,
+			arrows: true
+		  }
+		}
+	  ]
+	});    
+  });
