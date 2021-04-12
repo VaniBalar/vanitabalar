@@ -1,0 +1,370 @@
+Product cat wise product show in tab [life chem pharma],[bt, bonnyrigg tiles ]
+WITH SLICK SLIDER
+
+*****************
+ADD FUNCTION FILE
+*****************
+
+
+<?php 
+
+/**
+
+ * WooCommerce Customization
+
+**/
+
+// =======================Product category
+
+function bt_product_category(){
+
+     $args = array(
+           'taxonomy'     => 'product_cat',
+           // 'orderby'      => 'name',
+           'show_count'   => 0,
+           'pad_counts'   => 0,
+           'hierarchical' => 1,
+           'posts_per_page' => 5,
+           'title_li'     => '',
+           'hide_empty'   => 1,
+           'number'		=> 6
+    );
+            
+    $all_categories = get_categories( $args );
+    $html = "";
+    $html .= '<div class="prod_cat_inner_row">';
+	$html .= '<div class="prod_cat_col_6 prod_cat_left_box">'; 
+ 	$html .= '<div class="prod_cat_inner_box prod_cat_inner_left_box">';
+	$count = 0;
+	foreach ($all_categories as $cat) {
+		$count++;
+         	// echo "<pre>";
+          //   print_r($cat);
+          //   echo "</pre>";
+          //   die;
+		$category_id = $cat->term_id;
+        $title = $cat->cat_name;  
+
+		 	// forloop 
+        $active_class ="";
+        if($count == 3)
+        {
+          $active_class = "active_box";
+        }
+        	$html .='<div class="prod_cat_inner_info_box '.$active_class.'" data-id="'.$cat->slug.'">';
+        	$html .= '<span class="prod_num">0'.$count.'</span>';
+		 	$html .= '<div class="prod_cat_name">'.$title;
+		 	$html .= '</div>';
+		 	$html .= '</div>';
+		} 
+  
+		 // end forloop 
+		 	$html .= '</div>';
+			$html .= '</div>';
+
+			$html .= '<div class="prod_cat_col_6 prod_cat_img_6"> ';
+			$html .= '<div class="prod_cat_inner_box">';
+ 		// forloop 
+      $count2 = 0;
+
+			foreach ($all_categories as $cat) {
+          $count2++;
+          $css = "";
+          if($count2 == 3)
+          {
+            $css = "display:block";
+          }
+
+				  	$category_id = $cat->term_id;
+        
+				 	$thumbnail_id = get_woocommerce_term_meta($cat->term_id, 'thumbnail_id', true);           
+          $image = wp_get_attachment_url($thumbnail_id);
+		 	$html .= '<div class="prod_cat_img" id="'.$cat->slug.'" style="'.$css.'">';
+		 	$html .= '<img src="'.$image.'">';
+		 	$html .= '</div>';
+		 	// end forloop 
+		 	} 
+		 	$html .= '</div>';
+			$html .= '</div>';          
+    	
+    $html .= '</div>';
+    // echo "<pre>";
+    // print_r($html);
+    // echo "</pre>";
+    return $html;       
+}
+add_shortcode('product_category_list', 'bt_product_category'); // ShortCode [product_category_list]
+
+
+// ================================================================================
+// ==============================Product Section====================================
+function bt_products() {
+
+	  $args = array(
+           'taxonomy'     => 'product_cat',
+           'orderby'      => 'name',
+           'show_count'   => 0,
+           'pad_counts'   => 0,
+           'hierarchical' => 1,
+           'posts_per_page' => 10,
+           'title_li'     => '',
+           'hide_empty'   => 0,
+           'number'		  => 5
+    );
+            
+    $all_categories = get_categories( $args );
+    $cat_id = 0;
+
+    if($all_categories){
+
+    	 $cat_id = $all_categories[0]->term_id;
+    }
+    	// echo "<pre>";
+    	// print_r($all_categories);
+    	// echo "</pre>";
+    	// die;
+
+
+    $query = new WP_Query( array(
+           'post_type'             => 'product',
+		   'post_status'           => 'publish',
+		   'ignore_sticky_posts'   => 1,
+		   'posts_per_page'        => '12',
+		   'tax_query'             => array(
+		        array(
+		            'taxonomy'  => 'product_cat',
+		            'field'     => 'term_id',
+		            'terms'     => array($cat_id),
+		            'operator'  => 'IN',
+        	)
+    	) )
+);
+    if($query->have_posts()) :
+          
+          $prod = "";
+          $prod .= '<div class="bt_prod_row">';
+
+        while($query->have_posts()) : $query->the_post();
+            
+            $add_to_cart = do_shortcode('[add_to_cart id= "'.get_the_ID().'"]');
+            $price = get_post_meta( get_the_ID(), '_regular_price', true);
+            $sale = get_post_meta( get_the_ID(), '_sale_price', true);
+          
+            $prod .= ' <div class="bt_prod_col_4">';
+            $prod .= ' <div class="bt_prod_block">';
+            $prod .= ' <div class="bt_prod_img">'; 
+            $prod .= '<a href="'.get_permalink().'">';
+            $prod .= '<img src="'.get_the_post_thumbnail_url( ).'" class="prod_inner_img">';           
+            $prod .= '</a>';                          
+            $prod .= '</div>';
+            $prod .= '<div class="bt_prod_info">';
+            $prod .= '<div class="prod_title">';
+            $prod .=  '<a href="'.get_permalink().'">' . get_the_title().'</a>';
+            $prod .= '<span>Buy 10 get 2 free</span>';
+            $prod .= '</div>';
+            $prod .= '<div class="prod_price">';
+            $prod .= '<span>$'. $price.'</span>';
+            $prod .= '</div>';
+            $prod .= '</div>';        
+            $prod .= '<div class="prod_hover_btn">';    
+
+            $prod .= '<div class="prod_btn_row">';
+            $prod .= '<div class="prod_hover_btn_1">';        
+            $prod .= '<a href="tel:(02) 8786 0288" class="site_btn cta_btn"><span>Call (02) 8786 0288 </span></a>';  
+            $prod .= '</div>'; 
+
+            $prod .= '<div class="prod_hover_btn_1">';       
+            $prod .= '<a href="#bt_enquiry_pop_up" class="site_btn cta_btn"><span>Enquire Now</span></a>'; 
+            $prod .= '</div>';
+             $prod .= '</div>';
+            $prod .= '</div>';
+            $prod .= '</div>';
+            $prod .= '</div>';
+
+        endwhile;
+            $prod .= '</div>';
+        return $prod;
+        wp_reset_postdata();
+         endif;
+}
+add_shortcode( 'bt_latest_product', 'bt_products' ); // [bt_latest_product]
+
+
+
+// ==========================Product Category tab=====================
+function bt_product_cat_tab(){
+
+	  $args = array(
+           'taxonomy'     => 'product_cat',
+           // 'orderby'      => 'name',
+           'show_count'   => 0,
+           'pad_counts'   => 0,
+           'hierarchical' => 1,
+           'posts_per_page' => 10,
+           'title_li'     => '',
+           'hide_empty'   => 1,
+           'number'		  => 5
+    );
+            
+    $all_categories = get_categories( $args );
+    // echo "<pre>";
+    // print_r($all_categories);
+    // echo "</pre>";
+    // die;
+
+    $$html = "";
+    
+   foreach ($all_categories as $cat) {
+   	$count++;
+
+      if($cat->category_parent == 0) {
+
+         	$category_id = $cat->term_id;
+            $thumbnail_id = get_woocommerce_term_meta($cat->term_id, 'thumbnail_id', true);           
+            $image = wp_get_attachment_url($thumbnail_id);
+            $title = $cat->cat_name;  
+
+            $active_class ="";
+	        if($count == 1)
+	        {
+	          $active_class = "active_li";
+	        }
+
+            $html .= '<ul class="bt_prod_ul">';
+            $html .= '<li data-id="'.$category_id.'" class="'.$active_class.'" data-id="'.$cat->slug.'">'.$title.'</li>';
+            $html .= '</ul>';                
+      } 
+    }    
+    return $html;       
+}
+add_shortcode('product_tab', 'bt_product_cat_tab'); // [product_tab]
+
+// ===============================================================
+// ================================AJAx ===========================
+add_action('wp_ajax_nopriv_shop_by_self_prod', 'shop_by_self_prod');
+add_action('wp_ajax_shop_by_self_prod', 'shop_by_self_prod');
+function shop_by_self_prod(){
+  
+    $query = new WP_Query( array(
+           'post_type'             => 'product',
+		   'post_status'           => 'publish',
+		   'ignore_sticky_posts'   => 1,
+		   'posts_per_page'        => '12',
+		   'tax_query'             => array(
+		        array(
+		            'taxonomy'  => 'product_cat',
+		            'field'     => 'term_id',
+		            'terms'     => array($_POST['prod_id']),
+		            'operator'  => 'IN',
+        	)
+    	) )
+);
+    if($query->have_posts()) :
+          
+          $prod = "";
+          // $prod .= '<div class="bt_prod_row">';
+
+        while($query->have_posts()) : $query->the_post();
+            
+            $add_to_cart = do_shortcode('[add_to_cart id= "'.get_the_ID().'"]');
+            $price = get_post_meta( get_the_ID(), '_regular_price', true);
+            $sale = get_post_meta( get_the_ID(), '_sale_price', true);
+          
+            $prod .= ' <div class="bt_prod_col_4">';
+            $prod .= ' <div class="bt_prod_block">';
+            $prod .= ' <div class="bt_prod_img">'; 
+            $prod .= '<a href="'.get_permalink().'">';
+            $prod .= '<img src="'.get_the_post_thumbnail_url( ).'" class="prod_inner_img">';           
+            $prod .= '</a>';                          
+            $prod .= '</div>';
+            $prod .= '<div class="bt_prod_info">';
+            $prod .= '<div class="prod_title">';
+            $prod .=  '<a href="'.get_permalink().'">' . get_the_title().'</a>';
+            $prod .= '<span>Buy 10 get 2 free</span>';
+            $prod .= '</div>';
+            $prod .= '<div class="prod_price">';
+            $prod .= '<span>$'. $price.'</span>';
+            $prod .= '</div>';
+            $prod .= '</div>';        
+            $prod .= '<div class="prod_hover_btn">'; 
+            $prod .= '<div class="prod_btn_row">';
+            $prod .= '<div class="prod_hover_btn_1">';            
+            $prod .= '<a href="tel:(02) 8786 0288" class="site_btn cta_btn"><span>Call (02) 8786 0288 </span></a>'; 
+            $prod .= '</div>';
+            $prod .= '<div class="prod_hover_btn_1">';          
+            $prod .= '<a href="#bt_enquiry_pop_up" class="site_btn cta_btn"><span>Enquire Now</span></a>';  
+            $prod .= '</div>'; 
+            $prod .= '</div>';                         
+            $prod .= '</div>';
+            $prod .= '</div>';
+            $prod .= '</div>';
+
+        endwhile;
+            // $prod .= '</div>';
+        // return $prod;
+        wp_reset_postdata();
+         endif;
+
+    wp_reset_query(); 
+    echo json_encode($prod);
+    wp_die(); 
+}
+
+
+
+?>
+
+*******
+JS FILE
+*******
+
+jQuery(document).ready(function(){
+    jQuery('.bt_prod_ul li').click(function(){
+        console.log("bt_product_tab tab click----------------");
+
+        var prod_tab_id = jQuery(this).attr('data-id');
+        console.log("prod_tab_id------>",prod_tab_id);
+
+        jQuery(".bt_prod_ul li").removeClass("active_li");
+        jQuery(this).addClass("active_li");
+
+
+        jQuery(function(jQuery){
+            jQuery.ajax({
+              url: "https://zg.digital/projects/bt/wp-admin/admin-ajax.php",
+                type: 'POST',
+              datatype: 'JSON',
+              data: {
+                action: 'shop_by_self_prod',  /aa function file ma aa name nu function mukvanu/
+                prod_id: prod_tab_id,
+              },
+              beforeSend:function(){
+                jQuery('#loader_inner').show();
+              },
+              complete:function(){
+                jQuery('#loader_inner').hide();
+              },
+              success: function(json){
+                console.log("json-------->",json);
+                 var  top_products_row  =     JSON.parse(json);  /*ano us jsone decode karva tai che */
+                  jQuery('.bt_prod_row ').removeClass("slick-initialized");
+            jQuery('.bt_prod_row').removeClass("slick-slider");
+
+                  jQuery(".bt_prod_row").html(top_products_row);
+               
+                  jQuery.getScript("https://zealgroup.com.au/projects/BT/wp-content/themes/indclude/js/slick.js");
+                  jQuery.getScript("https://zealgroup.com.au/projects/BT/wp-content/themes/indclude/js/slick.min.js");
+          slider_call();
+              }
+            });
+        });
+
+    });
+});
+
+*******
+DIVI
+******
+
+
+<div class="bt_prod_block"> </div>
