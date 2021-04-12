@@ -1,0 +1,610 @@
+<?php
+/*
+Plugin Name: SEG Offers
+Plugin URI: http://JohnBocook.com
+Description: Registers a Custom Post Type for Offers and create's a metabox for offer time.
+Version: 1.0
+Author: John Bocook
+Author URI: http://johnbocook.com
+License: Public Domain
+*/
+
+
+
+/* Register & Setup Offer Post Type */
+
+function jbocook_offers_posttype() {
+
+  $labels = array(
+		'name'                => _x( 'SEG Offers', 'Post Type General Name', 'text_domain' ),
+		'singular_name'       => _x( 'SEG Offer', 'Post Type Singular Name', 'text_domain' ),
+		'menu_name'           => __( 'Offer', 'text_domain' ),
+		'parent_item_colon'   => __( 'Parent Offer', 'text_domain' ),
+		'all_items'           => __( 'All Offer', 'text_domain' ),
+		'view_item'           => __( 'View Offer', 'text_domain' ),
+		'add_new_item'        => __( 'Add New Offer', 'text_domain' ),
+		'add_new'             => __( 'New Offer', 'text_domain' ),
+		'edit_item'           => __( 'Edit Offer', 'text_domain' ),
+		'update_item'         => __( 'Update Offer', 'text_domain' ),
+		'search_items'        => __( 'Search Offer', 'text_domain' ),
+		'not_found'           => __( 'No Offer Found', 'text_domain' ),
+		'not_found_in_trash'  => __( 'No Offer in Trash', 'text_domain' ),
+	);
+	$rewrite = array(
+		'slug'                => 'custom-slug',
+		'with_front'          => true,
+		'pages'               => true,
+		'feeds'               => true,
+	);
+	$args = array(
+		'label'               => __( 'offer', 'text_domain' ),
+		'description'         => __( 'City Offers', 'text_domain' ),
+		'labels'              => $labels,
+		'supports'            => array( 'title', 'author', 'thumbnail', 'revisions', ),
+		'taxonomies'          => array( 'offer' ),
+		'hierarchical'        => false,
+		'public'              => true,
+		'show_ui'             => true,
+		'show_in_menu'        => true,
+		'show_in_nav_menus'   => true,
+		'show_in_admin_bar'   => true,
+		'menu_position'       => 5,
+		'menu_icon'           => '/offericon.png',
+		'can_export'          => true,
+		'has_archive'         => true,
+		'exclude_from_search' => false,
+		'publicly_queryable'  => true,
+		'query_var'           => 'gcoffers',
+		'rewrite'             => $rewrite,
+		'capability_type'     => 'page',
+	);
+	register_post_type( 'jbocook_post_event', $args );
+
+}
+
+// Hook into the 'init' action
+add_action( 'init', 'jbocook_offers_posttype', 0 );
+
+
+
+
+/* Add Custom Meta Boxes */
+// important: note the priority of 99, the js needs to be placed after tinymce loads
+
+add_action( 'add_meta_boxes', 'jbocook_offer_post_meta_add' );
+function jbocook_offer_post_meta_add()
+{
+	add_meta_box( 'jbocook-offer-post-id', 'Offer Information', 'jbocook_offer_post_meta', 'jbocook_post_event', 'normal', 'high' );
+}
+
+function jbocook_offer_post_meta( $post )
+{
+	$values = get_post_custom( $post->ID );
+	// offers
+    $offerstate = isset( $values['jbocook_offer_state'] ) ? esc_attr( $values['jbocook_offer_state'][0] ) : '';
+	$offerdesc = isset( $values['jbocook_offer_desc'] ) ? esc_attr( $values['jbocook_offer_desc'][0] ) : '';
+
+	// Invertor
+	$invertortitle = isset( $values['jbocook_offer_invertor_title'] ) ? esc_attr( $values['jbocook_offer_invertor_title'][0] ) : '';
+	$invertordesc01p = isset( $values['jbocook_offer_invertor_desc_01'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_01'][0] ) : '';
+	$invertordesc02p = isset( $values['jbocook_offer_invertor_desc_02'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_02'][0] ) : '';
+	$invertordesc03p = isset( $values['jbocook_offer_invertor_desc_03'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_03'][0] ) : '';
+	$invertorimg = isset( $values['jbocook_offer_invertor_img'] ) ? esc_attr( $values['jbocook_offer_invertor_img'][0] ) : '';
+
+	// Battery
+	$batterytitle = isset( $values['jbocook_offer_battery_title'] ) ? esc_attr( $values['jbocook_offer_battery_title'][0] ) : '';
+	$batterydesc01p = isset( $values['jbocook_offer_battery_desc_01'] ) ? esc_attr( $values['jbocook_offer_battery_desc_01'][0] ) : '';
+	$batterydesc02p = isset( $values['jbocook_offer_battery_desc_02'] ) ? esc_attr( $values['jbocook_offer_battery_desc_02'][0] ) : '';
+	$batterydesc03p = isset( $values['jbocook_offer_battery_desc_03'] ) ? esc_attr( $values['jbocook_offer_battery_desc_03'][0] ) : '';
+
+
+	// Warranty
+	$warrantytitle = isset( $values['jbocook_offer_warranty_title'] ) ? esc_attr( $values['jbocook_offer_warranty_title'][0] ) : '';
+	$warrantydesc01p = isset( $values['jbocook_offer_warranty_desc_01'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_01'][0] ) : '';
+	$warrantydesc02p = isset( $values['jbocook_offer_warranty_desc_02'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_02'][0] ) : '';
+	$warrantydesc03p = isset( $values['jbocook_offer_warranty_desc_03'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_03'][0] ) : '';
+
+	// Optimisers
+	$optimiserstitle = isset( $values['jbocook_offer_optimisers_title'] ) ? esc_attr( $values['jbocook_offer_optimisers_title'][0] ) : '';
+	$optimisersdesc01p = isset( $values['jbocook_offer_optimisers_desc_01'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_01'][0] ) : '';
+	$optimisersdesc02p = isset( $values['jbocook_offer_optimisers_desc_02'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_02'][0] ) : '';
+	$optimisersdesc03p = isset( $values['jbocook_offer_optimisers_desc_03'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_03'][0] ) : '';
+
+
+	wp_nonce_field( 'jbocook_offer_post_nonce', 'meta_box_nonce' );
+	?>
+	<style>
+	#jbocook_offers input {width:200px; font-size:14px;}
+	#visibility {display:none;}
+	.misc-yoast {display:none;}
+
+	</style>
+
+	<div id="jbocook_offers" style="display:inline-block;width:45%;vertical-align:top;">
+        <p>
+            <span style="font-size:20px;">Offer State</span>
+            <select name="jbocook_offer_state" id="jbocook_offer_state">
+                <option value="vic" <?php  if(@$offerstate == "vic") { echo "selected"; } ?>  >VIC</option>
+                <option value="nsw" <?php  if(@$offerstate == "nsw") { echo "selected"; } ?>>NSW</option>
+                <option value="qld" <?php  if(@$offerstate == "qld") { echo "selected"; } ?>>QLD</option>
+				<option value="sa" <?php  if(@$offerstate == "sa") { echo "selected"; } ?>>SA</option>
+				<option value="tas" <?php  if(@$offerstate == "tas") { echo "selected"; } ?>>TAS</option>
+                <option value="wa" <?php  if(@$offerstate == "wa") { echo "selected"; } ?>>WA</option>
+            </select>
+        </p>
+
+    </div>
+    
+	<div style="display:inline-block;width:45%;">
+		<p>
+            <span style="font-size:20px;">Offer Description</span>
+			<textarea name="jbocook_offer_desc" id="jbocook_offer_desc" value="<?php echo $offerdesc; ?>" placeholder="Offer Description" rows="7" style="width:100%; font-size:14px;"><?php echo $offerdesc; ?></textarea></div>
+		</p>
+	</div>
+
+	<!-- Invertor -->
+	<div style="padding:20px">
+		<div>
+			<span style="font-size:40px;">Invertor Details Section</span><hr>
+		</div>
+
+		<div style="display:inline-block;width: 97%;padding:0 20px;">
+			<div>
+				<span style="font-size:20px;">Invertor Title :-</span>
+				<input type="text" name="jbocook_offer_invertor_title" id="jbocook_offer_invertor_title" value="<?php echo $invertortitle; ?>" placeholder="Invertor Title" style="width: 100%;margin: 20px 0;">
+			</div>
+			<div>
+				<span style="font-size:20px;">Invertor Description Points:-</span>
+				<!-- <textarea name="jbocook_offer_invertor_desc" id="jbocook_offer_invertor_desc" value="<?php echo $invertordesc; ?>" placeholder="Invertor Description" rows="7" style="width:100%; font-size:14px;margin: 20px 0;"><?php echo $invertordesc; ?></textarea></div> -->
+				<input type="text" name="jbocook_offer_invertor_desc_01" id="jbocook_offer_invertor_desc_01" value="<?php echo $invertordesc01p; ?>" placeholder="Invertor Description Point 1" style="width: 100%;margin: 20px 0 5px 0;">
+				<input type="text" name="jbocook_offer_invertor_desc_02" id="jbocook_offer_invertor_desc_02" value="<?php echo $invertordesc02p; ?>" placeholder="Invertor Description Points 2" style="width: 100%;margin: 5px 0;">
+				<input type="text" name="jbocook_offer_invertor_desc_03" id="jbocook_offer_invertor_desc_03" value="<?php echo $invertordesc03p; ?>" placeholder="Invertor Description Points 3" style="width: 100%;margin: 5px 0;">
+			</div>
+			 <div style="padding: 20px 0;">
+				<span style="font-size:20px;">Select Invertor Image :-</span>
+				<input type="file" id="jbocook_offer_invertor_img" name="jbocook_offer_invertor_img" value="<?php echo $invertorimg; ?>">
+				<input type="file" name="my_image_upload" id="my_image_upload"  multiple="false" />
+				<img class="invertor_img" id="invertor_img" src=""/>
+			</div> 
+		</div>`
+	</div>
+	<!-- choose img after show -->
+	<script>
+		document.getElementById("jbocook_offer_invertor_img").onchange = function () {
+		var reader = new FileReader();
+
+		reader.onload = function (e) {
+			// get loaded data and render thumbnail.
+			document.getElementById("invertor_img").src = e.target.result;
+		};
+		// read the image file as a data URL.
+		reader.readAsDataURL(this.files[0]);
+		jQuery("img").css("display", "block");
+		jQuery("img").css("width", "20%");
+		jQuery("img").css("padding", "20px 0");
+	};
+	</script>
+
+	<!-- Battery -->
+	<div style="padding:20px">
+		<div>
+			<span style="font-size:40px;">Battery Details Section</span><hr>
+		</div>
+
+		<div style="display:inline-block;width: 97%;padding:0 20px;">
+			<div>
+				<span style="font-size:20px;">Battery Title :-</span>
+				<input type="text" name="jbocook_offer_battery_title" id="jbocook_offer_battery_title" value="<?php echo $batterytitle; ?>" placeholder="battery Title" style="width: 100%;margin: 20px 0;">
+			</div>
+			<div>
+				<span style="font-size:20px;">Battery Description :-</span>
+				<input type="text" name="jbocook_offer_battery_desc_01" id="jbocook_offer_battery_desc_01" value="<?php echo $batterydesc01p; ?>" placeholder="battery Description Point 1" style="width: 100%;margin: 20px 0 5px 0;">
+				<input type="text" name="jbocook_offer_battery_desc_02" id="jbocook_offer_battery_desc_02" value="<?php echo $batterydesc02p; ?>" placeholder="battery Description Points 2" style="width: 100%;margin: 5px 0;">
+				<input type="text" name="jbocook_offer_battery_desc_03" id="jbocook_offer_battery_desc_03" value="<?php echo $batterydesc03p; ?>" placeholder="battery Description Points 3" style="width: 100%;margin: 5px 0;">
+			</div>
+			<!-- <div style="padding: 20px 0;">
+				<span style="font-size:20px;">Select Battery Image :-</span>
+				<input type="file" id="jbocook_offer_battery_img" name="jbocook_offer_battery_img" value="">
+				<img id="battery_img" src=""/>
+			</div> -->
+		</div>
+	</div>
+	<!-- choose img after show -->
+	<script>
+		document.getElementById("jbocook_offer_battery_img").onchange = function () {
+		var reader = new FileReader();
+
+		reader.onload = function (e) {
+			// get loaded data and render thumbnail.
+			document.getElementById("battery_img").src = e.target.result;
+		};
+		// read the image file as a data URL.
+		reader.readAsDataURL(this.files[0]);
+		jQuery("img").css("display", "block");
+		jQuery("img").css("width", "20%");
+		jQuery("img").css("padding", "20px 0");
+	};
+	</script>
+
+	<!-- Warranty -->
+	<div style="padding:20px">
+		<div>
+			<span style="font-size:40px;">Warranty Details Section</span><hr>
+		</div>
+
+		<div style="display:inline-block;width: 97%;padding:0 20px;">
+			<div>
+				<span style="font-size:20px;">Warranty Title :-</span>
+				<input type="text" name="jbocook_offer_warranty_title" id="jbocook_offer_warranty_title" value="<?php echo $warrantytitle; ?>" placeholder="Warranty Title" style="width: 100%;margin: 20px 0;">
+			</div>
+			<div>
+				<span style="font-size:20px;">Warranty Description :-</span>
+				<input type="text" name="jbocook_offer_warranty_desc_01" id="jbocook_offer_warranty_desc_01" value="<?php echo $warrantydesc01p; ?>" placeholder="warranty Description Point 1" style="width: 100%;margin: 20px 0 5px 0;">
+				<input type="text" name="jbocook_offer_warranty_desc_02" id="jbocook_offer_warranty_desc_02" value="<?php echo $warrantydesc02p; ?>" placeholder="warranty Description Points 2" style="width: 100%;margin: 5px 0;">
+				<input type="text" name="jbocook_offer_warranty_desc_03" id="jbocook_offer_warranty_desc_03" value="<?php echo $warrantydesc03p; ?>" placeholder="warranty Description Points 3" style="width: 100%;margin: 5px 0;">
+			</div>
+			<!-- <div style="padding: 20px 0;">
+				<span style="font-size:20px;">Select Warranty Image :-</span>
+				<input type="file" id="jbocook_offer_warranty_img" name="jbocook_offer_warranty_img" value="">
+				<img id="warranty_img" src=""/>
+			</div> -->
+		</div>
+	</div>
+	<!-- choose img after show -->
+	<script>
+		document.getElementById("jbocook_offer_warranty_img").onchange = function () {
+		var reader = new FileReader();
+
+		reader.onload = function (e) {
+			// get loaded data and render thumbnail.
+			document.getElementById("warranty_img").src = e.target.result;
+		};
+		// read the image file as a data URL.
+		reader.readAsDataURL(this.files[0]);
+		jQuery("img").css("display", "block");
+		jQuery("img").css("width", "20%");
+		jQuery("img").css("padding", "20px 0");
+	};
+	</script>
+
+		<!-- Optimisers -->
+	<div style="padding:20px">
+		<div>
+			<span style="font-size:40px;">Optimisers Details Section</span><hr>
+		</div>
+
+		<div style="display:inline-block;width: 97%;padding:0 20px;">
+			<div>
+				<span style="font-size:20px;">Optimisers Title :-</span>
+				<input type="text" name="jbocook_offer_optimisers_title" id="jbocook_offer_optimisers_title" value="<?php echo $optimiserstitle; ?>" placeholder="optimisers Title" style="width: 100%;margin: 20px 0;">
+			</div>
+			<div>
+				<span style="font-size:20px;">Optimisers Description :-</span>
+				<input type="text" name="jbocook_offer_optimisers_desc_01" id="jbocook_offer_optimisers_desc_01" value="<?php echo $optimisersdesc01p; ?>" placeholder="optimisers Description Point 1" style="width: 100%;margin: 20px 0 5px 0;">
+				<input type="text" name="jbocook_offer_optimisers_desc_02" id="jbocook_offer_optimisers_desc_02" value="<?php echo $optimisersdesc02p; ?>" placeholder="optimisers Description Points 2" style="width: 100%;margin: 5px 0;">
+				<input type="text" name="jbocook_offer_optimisers_desc_03" id="jbocook_offer_optimisers_desc_03" value="<?php echo $optimisersdesc03p; ?>" placeholder="optimisers Description Points 3" style="width: 100%;margin: 5px 0;">
+			</div>
+			<!-- <div style="padding: 20px 0;">
+				<span style="font-size:20px;">Select Optimisers Image :-</span>
+				<input type="file" id="jbocook_offer_optimisers_img" name="jbocook_offer_optimisers_img" value="">
+				<img id="optimisers_img" src=""/>
+			</div> -->
+		</div>
+	</div>
+
+	<!-- choose img after show -->
+	<script>
+		document.getElementById("jbocook_offer_optimisers_img").onchange = function () {
+		var reader = new FileReader();
+
+		reader.onload = function (e) {
+			// get loaded data and render thumbnail.
+			document.getElementById("optimisers_img").src = e.target.result;
+		};
+		// read the image file as a data URL.
+		reader.readAsDataURL(this.files[0]);
+		jQuery("img").css("display", "block");
+		jQuery("img").css("width", "20%");
+		jQuery("img").css("padding", "20px 0");
+	};
+	</script>
+
+	
+	<!-- <script>
+	jQuery( document ).ready(function() {
+		jQuery( "#submitdiv h3.hndle span" ).replaceWith('Offer Date/Time');
+
+		setTimeout(function(){ 
+        jQuery('#submitdiv #timestamp').replaceWith('<span id="timestamp" style="font-weight:bold; color:red;">Set Day and Time</span>')}, 2000); 
+
+
+	});
+	</script> -->
+	<?php	
+}
+
+
+add_action( 'save_post', 'jbocook_offer_post_meta_save' );
+function jbocook_offer_post_meta_save( $post_id )
+{
+	// Bail if we're doing an auto save
+	if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
+	
+	// if our nonce isn't there, or we can't verify it, bail
+	if( !isset( $_POST['meta_box_nonce'] ) || !wp_verify_nonce( $_POST['meta_box_nonce'], 'jbocook_offer_post_nonce' ) ) return;
+	
+	// if our current user can't edit this post, bail
+	if( !current_user_can( 'edit_post' ) ) return;
+	
+	// now we can actually save the data
+	$allowed = array( 
+		'a' => array( // on allow a tags
+			'href' => array() // and those anchords can only have href attribute
+		)
+	);
+	
+	// Probably a good idea to make sure your data is set
+	// promotions
+    if( isset( $_POST['jbocook_offer_state'] ) )
+        update_post_meta( $post_id, 'jbocook_offer_state', wp_kses( $_POST['jbocook_offer_state'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_desc'] ) )
+		update_post_meta( $post_id, 'jbocook_offer_desc', wp_kses( $_POST['jbocook_offer_desc'], $allowed ) );
+
+
+	// invertor Details
+	if( isset( $_POST['jbocook_offer_invertor_title'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_invertor_title', wp_kses( $_POST['jbocook_offer_invertor_title'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_invertor_desc_01'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_invertor_desc_01', wp_kses( $_POST['jbocook_offer_invertor_desc_01'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_invertor_desc_02'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_invertor_desc_02', wp_kses( $_POST['jbocook_offer_invertor_desc_02'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_invertor_desc_03'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_invertor_desc_03', wp_kses( $_POST['jbocook_offer_invertor_desc_03'], $allowed ) );
+	//  if( isset( $_FILES['jbocook_offer_invertor_img'] ) )
+	// 	update_post_meta( $post_id, 'jbocook_offer_invertor_img', wp_kses( $_FILES['jbocook_offer_invertor_img'], $allowed ) );
+
+	// Battery Details
+	if( isset( $_POST['jbocook_offer_battery_title'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_battery_title', wp_kses( $_POST['jbocook_offer_battery_title'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_battery_desc_01'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_battery_desc_01', wp_kses( $_POST['jbocook_offer_battery_desc_01'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_battery_desc_02'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_battery_desc_02', wp_kses( $_POST['jbocook_offer_battery_desc_02'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_battery_desc_03'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_battery_desc_03', wp_kses( $_POST['jbocook_offer_battery_desc_03'], $allowed ) );
+
+	// Warranty Details
+	if( isset( $_POST['jbocook_offer_warranty_title'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_warranty_title', wp_kses( $_POST['jbocook_offer_warranty_title'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_warranty_desc_01'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_warranty_desc_01', wp_kses( $_POST['jbocook_offer_warranty_desc_01'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_warranty_desc_02'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_warranty_desc_02', wp_kses( $_POST['jbocook_offer_warranty_desc_02'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_warranty_desc_03'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_warranty_desc_03', wp_kses( $_POST['jbocook_offer_warranty_desc_03'], $allowed ) );
+
+		// Optimisers Details
+	if( isset( $_POST['jbocook_offer_optimisers_title'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_optimisers_title', wp_kses( $_POST['jbocook_offer_optimisers_title'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_optimisers_desc_01'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_optimisers_desc_01', wp_kses( $_POST['jbocook_offer_optimisers_desc_01'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_optimisers_desc_02'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_optimisers_desc_02', wp_kses( $_POST['jbocook_offer_optimisers_desc_02'], $allowed ) );
+	if( isset( $_POST['jbocook_offer_optimisers_desc_03'] ) )
+	update_post_meta( $post_id, 'jbocook_offer_optimisers_desc_03', wp_kses( $_POST['jbocook_offer_optimisers_desc_03'], $allowed ) );
+
+
+	
+}
+
+/* Style Custom Post Type Edit Screen Layout */
+
+
+function add_custom_meta_boxes() {  
+    add_meta_box('wp_custom_attachment', 'Invertor Image', 'wp_custom_attachment', 'jbocook_post_event', 'normal', 'high');  
+}
+add_action('add_meta_boxes', 'add_custom_meta_boxes');  
+
+function wp_custom_attachment() {  
+		$pdf_url='';
+
+		// $img_url = ""; 
+		$invertor_attachment=''; // Invertor
+		$battery_attachment=''; // Battery
+		$warranty_attachment=''; // Warranty
+		$optimisers_attachment=''; // Optimisers 
+		
+		if($_GET){
+				$view_datasheet = get_post_meta($_GET['post'], 'wp_custom_attachment', true );  
+		}
+
+        $view_datasheet['url'];
+		$pdfname = end( explode( "/", $view_datasheet['url'] ) );
+		
+		wp_nonce_field(plugin_basename(_FILE_), 'wp_custom_attachment_nonce');
+
+		$post_id = 0;
+		// $img_url = "";
+		$invertor_attachment_url = ""; // Invertor
+		$battery_attachment_url = "";  // Battery
+		$warranty_attachment_url = "";  // Warranty
+		$optimisers_attachment_url = "";  // Optimisers
+
+		if(@$_GET['post']){
+			$post_id = $_GET['post'];
+		}
+
+		// $view_datasheet = get_post_meta( $post_id, 'wp_custom_attachment', true );
+		
+		// Invertor
+		$invertor_attachment = get_post_meta( $post_id, 'invertor_attachment', true ); 
+		// echo "<pre>";
+		// 	print_r($invertor_attachment);
+		// echo "</pre>";
+		
+		// Battery
+		$battery_attachment = get_post_meta( $post_id, 'battery_attachment', true );
+		// Warranty
+		$warranty_attachment = get_post_meta( $post_id, 'warranty_attachment', true );
+		// Optimisers
+		$optimisers_attachment = get_post_meta( $post_id, 'optimisers_attachment', true );
+
+		if(@$view_datasheet){
+			// $img_url = $view_datasheet['url'];
+			// Invertor
+			$invertor_attachment_url = $invertor_attachment['url'];
+			// Battery
+			$battery_attachment_url = $battery_attachment['url'];
+			// Warranty
+			$warranty_attachment_url = $warranty_attachment['url'];
+			// Optimisers
+			$optimisers_attachment_url = $optimisers_attachment['url'];
+		}
+	
+        $html = '<p class="description">';
+        if(!empty($pdfname)){
+				// $html .= "<img src='".$img_url."' style='width:100%;height:200px;' >";
+				// Invertor
+				$html .= "<h1 style='text-align: center;padding: 0 0 10px 0;'>Invertor Image</h1><img src='".$invertor_attachment_url."' style='width:100%;height:200px;' >";
+				$html .= '<input type="file" id="invertor_attachment" name="invertor_attachment" value="" size="25"><hr style="margin-top: 15px;">';
+				// Battery
+				$html .= "<h1 style='text-align: center;padding: 0 0 10px 0;'>Battery Image</h1><img src='".$battery_attachment_url."' style='width:100%;height:200px;' >";
+				$html .= '<input type="file" id="battery_attachment" name="battery_attachment" value="" size="25"><hr style="margin-top: 15px;">';
+				// Warranty
+				$html .= "<h1 style='text-align: center;padding: 0 0 10px 0;'>Warranty Image</h1><img src='".$warranty_attachment_url."' style='width:100%;height:200px;' >";
+				$html .= '<input type="file" id="warranty_attachment" name="warranty_attachment" value="" size="25"><hr style="margin-top: 15px;">';
+				// Optimisers
+				$html .= "<h1 style='text-align: center;padding: 0 0 10px 0;'>Optimisers Image</h1><img src='".$optimisers_attachment_url."' style='width:100%;height:200px;' >";
+				$html .= '<input type="file" id="optimisers_attachment" name="optimisers_attachment" value="" size="25"><hr style="margin-top: 15px;">';
+        }
+    	else{
+                $html .= 'Upload your Image here.';
+		}
+		
+    $html .= '</p>';
+	// $html .= '<input type="file" id="wp_custom_attachment" name="wp_custom_attachment" value="" size="25"><hr style="margin-top: 15px;">';
+	// Invertor
+	
+	// Battery
+	
+	// Warranty
+	
+
+	$html .= '<img id="invertor_img" src=""/>';
+	echo $html;
+
+}
+
+add_action('save_post', 'save_custom_meta_data');
+function save_custom_meta_data($id) {
+    // if(!empty($_FILES['wp_custom_attachment']['name'])) {
+    //     $supported_types = array('application/pdf');
+    //     $arr_file_type = wp_check_filetype(basename($_FILES['wp_custom_attachment']['name']));
+    //     $uploaded_type = $arr_file_type['type'];
+
+    //     // if(in_array($uploaded_type, $supported_types)) {
+	// 		$upload = wp_upload_bits($_FILES['wp_custom_attachment']['name'], null, file_get_contents($_FILES['wp_custom_attachment']['tmp_name']));
+                        
+    //         if(isset($upload['error']) && $upload['error'] != 0) {
+    //             wp_die('There was an error uploading your Image. The error is: ' . $upload['error']);
+    //         } else {
+	// 			update_post_meta($id, 'wp_custom_attachment', $upload);
+				
+    //         }
+    //     // }
+    //     // else {
+    //     //     wp_die("The file type that you've uploaded is not a PDF.");
+    //     // }
+	// }
+
+	// INVERTOR
+	if(!empty($_FILES['battery_attachment']['name'])) {
+        $supported_types = array('application/pdf');
+        $arr_file_type = wp_check_filetype(basename($_FILES['battery_attachment']['name']));
+        $uploaded_type = $arr_file_type['type'];
+
+        // if(in_array($uploaded_type, $supported_types)) {
+			$upload = wp_upload_bits($_FILES['battery_attachment']['name'], null, file_get_contents($_FILES['battery_attachment']['tmp_name']));
+                        
+            if(isset($upload['error']) && $upload['error'] != 0) {
+                wp_die('There was an error uploading your Image. The error is: ' . $upload['error']);
+            } else {
+				update_post_meta($id, 'battery_attachment', $upload);
+				
+            }
+        // }
+        // else {
+        //     wp_die("The file type that you've uploaded is not a PDF.");
+        // }
+	}
+
+	// BATTERY
+	if(!empty($_FILES['invertor_attachment']['name'])) {
+        $supported_types = array('application/pdf');
+        $arr_file_type = wp_check_filetype(basename($_FILES['invertor_attachment']['name']));
+        $uploaded_type = $arr_file_type['type'];
+
+        // if(in_array($uploaded_type, $supported_types)) {
+			$upload = wp_upload_bits($_FILES['invertor_attachment']['name'], null, file_get_contents($_FILES['invertor_attachment']['tmp_name']));
+                        
+            if(isset($upload['error']) && $upload['error'] != 0) {
+                wp_die('There was an error uploading your Image. The error is: ' . $upload['error']);
+            } else {
+				update_post_meta($id, 'invertor_attachment', $upload);
+				
+            }
+        // }
+        // else {
+        //     wp_die("The file type that you've uploaded is not a PDF.");
+        // }
+	}
+
+	// WARRANTY
+	if(!empty($_FILES['warranty_attachment']['name'])) {
+        $supported_types = array('application/pdf');
+        $arr_file_type = wp_check_filetype(basename($_FILES['warranty_attachment']['name']));
+        $uploaded_type = $arr_file_type['type'];
+
+        // if(in_array($uploaded_type, $supported_types)) {
+			$upload = wp_upload_bits($_FILES['warranty_attachment']['name'], null, file_get_contents($_FILES['warranty_attachment']['tmp_name']));
+                        
+            if(isset($upload['error']) && $upload['error'] != 0) {
+                wp_die('There was an error uploading your Image. The error is: ' . $upload['error']);
+            } else {
+				update_post_meta($id, 'warranty_attachment', $upload);
+				
+            }
+        // }
+        // else {
+        //     wp_die("The file type that you've uploaded is not a PDF.");
+        // }
+	}
+	
+	// Optimisers
+	if(!empty($_FILES['optimisers_attachment']['name'])) {
+        $supported_types = array('application/pdf');
+        $arr_file_type = wp_check_filetype(basename($_FILES['optimisers_attachment']['name']));
+        $uploaded_type = $arr_file_type['type'];
+
+        // if(in_array($uploaded_type, $supported_types)) {
+			$upload = wp_upload_bits($_FILES['optimisers_attachment']['name'], null, file_get_contents($_FILES['optimisers_attachment']['tmp_name']));
+                        
+            if(isset($upload['error']) && $upload['error'] != 0) {
+                wp_die('There was an error uploading your Image. The error is: ' . $upload['error']);
+            } else {
+				update_post_meta($id, 'optimisers_attachment', $upload);
+				
+            }
+        // }
+        // else {
+        //     wp_die("The file type that you've uploaded is not a PDF.");
+        // }
+    }
+}
+
+function update_edit_form() {
+    echo ' enctype="multipart/form-data"';
+}
+add_action('post_edit_form_tag', 'update_edit_form');
+
+?>
