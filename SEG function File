@@ -1,0 +1,883 @@
+<?php
+
+function my_theme_enqueue_styles() {
+    // enqueue child theme style
+    wp_enqueue_style( 'sasaChild-theme-style', get_template_directory_uri() . '/style.css' );
+}
+
+// Custom Style sheet
+wp_enqueue_style( 'header-styles', get_stylesheet_directory_uri() . '/include/css/header.css');
+wp_enqueue_style( 'footer-styles', get_stylesheet_directory_uri() . '/include/css/footer.css');
+wp_enqueue_style( 'font-family', get_stylesheet_directory_uri() . '/include/css/font_family.css');
+wp_enqueue_style( 'button-hover-styles', get_stylesheet_directory_uri() . '/include/css/hover-button.css');
+wp_enqueue_style( 'innerpage', get_stylesheet_directory_uri() . '/include/css/innerpage.css');
+wp_enqueue_style( 'slick', get_stylesheet_directory_uri() . '/include/css/slick.css');
+wp_enqueue_style( 'slick-theme', get_stylesheet_directory_uri() . '/include/css/slick-theme.css');
+add_action( 'wp_enqueue_scripts', 'my_theme_enqueue_styles' );
+
+wp_enqueue_script( 'jquery' );
+// Custom JS Script
+wp_enqueue_script( 'et-admin-post-script', get_stylesheet_directory_uri() . '/include/js/site-script.js', array( 'jquery' ), $theme_version );
+wp_enqueue_script( 'slick-script', get_stylesheet_directory_uri() . '/include/js/slick.min.js', array( 'jquery' ), $theme_version );
+
+// Custom  fontawesome script
+wp_register_script( 'KitFontawesome', 'https://kit.fontawesome.com/5f56d07fb5.js', null, null, true );
+wp_enqueue_script('KitFontawesome');
+
+// Function to add site URL using Shortcode
+function get_site_url_xv() {
+    $SiteURL = get_site_url();
+    return $SiteURL;
+}
+add_shortcode('website_url', 'get_site_url_xv');
+
+
+// Add Shortcode
+function add_this_button( $atts ) {
+  // Attributes
+  extract( shortcode_atts(
+      array(
+          'title' => '',
+          'url' => '',
+          'siteUrl' => '',
+      ), $atts ) 
+);
+$SurL = ''; 
+if($url) {
+  $SurL = $url;
+} else {
+  $SurL = get_site_url().$siteUrl;
+}
+
+ $html = "<a href='" . $SurL . "'class='action-btn btn-motion_row_right'>" . $title . "</a>";
+ return $html;
+}
+add_shortcode( 'add_this_button', 'add_this_button' );  //[add_this_button title="button" url="#" siteUrl="FullURL"]
+
+
+
+// Add page slug to body class for css ref
+function add_slug_body_class( $classes ) {
+    global $post;
+  if ( isset( $post ) ) {
+    $classes[] = 'zd-' . $post->post_type . '-' . $post->post_name;
+    }
+    return $classes;
+}
+add_filter( 'body_class', 'add_slug_body_class' );
+
+// remove WP plugin and theme update 
+function remove_core_updates(){
+    global $wp_version;
+    return(object) array('last_checked'=> time(),'version_checked'=> $wp_version,);
+}
+
+add_filter('pre_site_transient_update_core','remove_core_updates');
+add_filter('pre_site_transient_update_plugins','remove_core_updates');
+add_filter('pre_site_transient_update_themes','remove_core_updates');
+
+
+
+function state_select(){
+  
+  if($_GET['state']){
+     /setcookie('state', $_GET['state'], time()+86400);/
+    //  unset($_COOKIE['state']); 
+    //  setcookie('state', $_GET['state']);
+    session_start();
+    $_SESSION["state"] = $_GET['state'];
+
+    ?>
+  <style type="text/css">
+div#main_popup {
+    display: none !important;
+}
+    </style>
+    <script type="text/javascript">
+      jQuery(document).ready(function () {
+        jQuery(document).ready(function(){
+    // console.log("working");
+    setTimeout(function(){
+
+      jQuery("body").removeClass("z_index_body");
+
+    },1100);
+  });
+      });
+    </script>
+    <?php
+
+  // Query the posts:
+
+  // Loop through the obituaries:
+ 
+  }else{
+  //  setcookie('state', $_GET['state'], time()+(86400 * 30), '/');
+   
+    if(@$_SESSION['state']){
+      ?>
+      <style type="text/css">
+      div#main_popup {
+          display: none !important;
+      }
+          </style>
+          <script type="text/javascript">
+            jQuery(document).ready(function () {
+              jQuery(document).ready(function(){
+          // console.log("working");
+          setTimeout(function(){
+      
+            jQuery("body").removeClass("z_index_body");
+      
+          },1100);
+        });
+            });
+          </script>
+          <?php
+    }
+  }
+}
+add_action( 'init', 'state_select', 1 );
+add_action ( 'wp_footer', 'state_select' );
+
+
+/// check sesstion  for popup
+function offer_list(){
+
+  session_start();
+  $_SESSION["state"] = $_GET['state'];
+
+    $args = array(
+      'post_type' => 'jbocook_post_event',
+      'posts_per_page' => '1111'
+      // Several more arguments could go here. Last one without a comma.
+  );
+  
+  // Query the posts:
+  $obituary_query = new WP_Query($args);
+  $html = "";
+  // Loop through the obituaries:
+  while ($obituary_query->have_posts()) : $obituary_query->the_post();
+
+  global $post;
+  
+  $values = get_post_custom( $post->ID );
+  $offerstate = isset( $values['jbocook_offer_state'] ) ? esc_attr( $values['jbocook_offer_state'][0] ) : '';
+ 
+  if($offerstate == $_SESSION['state']){
+    $feat_image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
+   $link =  get_permalink( $post->ID );
+  $html .= '<div class="offer_box">';
+  $html .= '<a href="'.$link.'">';
+  $html .= '<img src="'.$feat_image.'">';
+  $html .= '</a>';
+  $html .= '</div>';
+  }else if($offerstate == $_GET['state']){
+     $feat_image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
+   $link =  get_permalink( $post->ID );
+  $html .= '<div class="offer_box">';
+  $html .= '<a href="'.$link.'">';
+  $html .= '<img src="'.$feat_image.'">';
+  $html .= '</a>';
+  $html .= '</div>';
+
+  }
+
+  endwhile;
+  
+  
+  return $html;
+
+}
+
+add_shortcode("offers", "offer_list");
+
+
+
+// PROMOTION PAGE 
+
+
+
+
+/// check sesstion  for popup
+
+function special_offers_all_post($atts){
+  extract( shortcode_atts(
+    array(
+      'post_type' => 'jbocook_post_event',
+      'post_status' => 'publish',
+      'style_type' => '',
+      'orderby' => 'title', 
+      'order' => 'ASC',
+   ), $atts ) 
+  );
+  // $p=$category_name;
+  $args = array(  
+     'post_type' => 'jbocook_post_event',
+     'post_status' => 'publish',
+      'style_type' => '',
+     'orderby' => 'title', 
+     'posts_per_page' => -1,
+     'order' => 'ASC',
+  );
+  $args['style_type']=$style_type;
+  $html = "";
+  $loop = new WP_Query( $args ); 
+
+  $send_array = array();
+
+  $sostyle = 1;
+  while ( $loop->have_posts() ) : $loop->the_post(); 
+
+    $the_title =  get_the_title(); 
+
+    $values = get_post_custom( get_the_id() );
+    $featured_img = get_the_post_thumbnail_url(get_the_id(),'full');
+    $offerstate = isset( $values['jbocook_offer_state'] ) ? esc_attr( $values['jbocook_offer_state'][0] ) : '';
+    
+        /*echo "<pre>";
+        print_r($_COOKIE);
+        echo "</pre>";
+          echo "<pre>";
+        print_r($offerstate);
+        echo "</pre>";*/
+       
+    if($offerstate == $_SESSION['state']){
+      $promotion_feat_image = wp_get_attachment_url( get_post_thumbnail_id($post->ID) );
+      $promotion_title = get_the_title($post->ID);
+       ++$num;
+      ++$number_val;
+
+      $link =  get_permalink( $post->ID );
+
+          if($style_type == 0){
+            $sostyle++;
+            $spi_class="spileft";
+            if($sostyle % 2 !=0){
+              $spi_class="spileft";
+            }
+            if($sostyle % 2 ==0){
+              $spi_class="spiright";
+            }
+            $html .= '<div class="promotion_page_details">';
+              if($sostyle % 2 ==0){
+                $html .='<div class="offer_box promotion_page_img left">';
+                  $html .='<a href="'.$link.'">';
+                    $html .='<img src="'.$promotion_feat_image.'">';
+                  $html .='</a>';
+                $html .='</div>';
+              }
+              $html .='<div class="promotion_page_text second">';
+
+              $html .='<div class="promotion_text_box">';
+              $html .='<p class="heading_title">'.$promotion_title.'</p>';
+             
+
+              $html .='<div class="para_points">';
+              $html .='<ul><li>Lorem ipsum dolor sit amet</li><li>Consectetur adipiscing elit, sed do eiusmod</li><li>tempor incididunt ut labore</li></ul>';
+              $html .='</div>';
+
+              $html .='<div class="btn-cont btn_cont_white">';
+              $html .='<a href="'.$link.'" class="action-btn btn-motion_row_right">Learn More</a>';
+              $html .='<a href="#quote_popup" class="action-btn btn-motion_row_right promotion_space">Get A Quote</a>';
+              $html .='</div>';
+
+              $html .='</div>';
+
+               $html .='</div>';
+
+              if($sostyle % 2 !=0){
+                $html .='<div class="offer_box promotion_page_img right">';
+                  $html .='<a href="'.$link.'">';
+                    $html .='<img src="'.$promotion_feat_image.'">';
+                  $html .='</a>';
+                $html .='</div>';
+              }
+
+            $html .='</div>';
+
+          }
+          if($style_type == 1){
+            $html .= '<div class="promotion_page_details">';
+              $html .='<div class="offer_box promotion_page_img">';
+                $html .='<a href="'.$link.'">';
+                  $html .='<img src="'.$promotion_feat_image.'">';
+                $html .='</a>';
+              $html .='</div>';
+              $html .='<div class="promotion_page_text second">';
+
+              $html .='<div class="promotion_text_box">';
+              $html .='<p class="heading_title">'.$promotion_title.'</p>';
+             
+
+              $html .='<div class="para_points">';
+              $html .='<ul><li>Lorem ipsum dolor sit amet</li><li>Consectetur adipiscing elit, sed do eiusmod</li><li>tempor incididunt ut labore</li></ul>';
+              $html .='</div>';
+
+              $html .='<div class="btn-cont btn_cont_white">';
+              $html .='<a href="'.$link.'" class="action-btn btn-motion_row_right">Learn More</a>';
+              $html .='<a href="#quote_popup" class="action-btn btn-motion_row_right promotion_space">Get A Quote</a>';
+              $html .='</div>';
+
+              $html .='</div>';
+
+               $html .='</div>';
+            $html .='</div>';
+          }
+    }
+  endwhile;
+  return $html;
+}
+
+add_shortcode("special_offers_all_post", "special_offers_all_post");  //[special_offers_all_post style_type='']
+
+// END
+
+
+// 
+function upattern_post_sc(){
+  // extract( shortcode_atts(
+  //   array(
+  //     'post_type' => 'upattern_post',
+  //     'post_status' => 'publish',
+  //     'orderby' => 'title', 
+  //     'order' => 'ASC',
+  //  ), $atts ) 
+  // );
+  $args = array(  
+     'post_type' => 'upattern_post',
+     'post_status' => 'publish',
+     'orderby' => 'title', 
+     'order' => 'ASC', 
+     'posts_per_page' => -1,
+ );
+  $html = "";
+  $loop = new WP_Query( $args ); 
+
+     $send_array = array();
+
+ while ( $loop->have_posts() ) : $loop->the_post(); 
+
+ $the_title =  get_the_title(); 
+
+  $values = get_post_custom( get_the_id() );
+
+    $usage_pattern_num = isset( $values['usage_pattern_num'] ) ? esc_attr( $values['usage_pattern_num'][0] ) : '';
+    $usage_pattern = isset( $values['usage_pattern'] ) ? esc_attr( $values['usage_pattern'][0] ) : '';
+    
+
+  $send_array[] = get_the_title(); 
+
+    $html .='<option value="'.$usage_pattern_num.'">'.$usage_pattern.'</option>';
+
+ endwhile;
+  return $html;
+}
+
+add_shortcode("upattern_post_sc", "upattern_post_sc");  //[upattern_post_sc]
+
+
+function ccity_post_sc(){
+  // extract( shortcode_atts(
+  //   array(
+  //     'post_type' => 'ccity_post',
+  //     'post_status' => 'publish',
+  //     'orderby' => 'title', 
+  //     'order' => 'ASC',
+  //  ), $atts ) 
+  // );
+  $args = array(  
+     'post_type' => 'ccity_post',
+     'post_status' => 'publish',
+     'orderby' => 'title', 
+     'order' => 'ASC', 
+     'posts_per_page' => -1,
+ );
+  $html = "";
+  $loop = new WP_Query( $args ); 
+
+     $send_array = array();
+
+ while ( $loop->have_posts() ) : $loop->the_post(); 
+
+ $the_title =  get_the_title(); 
+
+  $values = get_post_custom( get_the_id() );
+
+    $closest_city_num = isset( $values['closest_city_num'] ) ? esc_attr( $values['closest_city_num'][0] ) : '';
+    $closest_city = isset( $values['closest_city'] ) ? esc_attr( $values['closest_city'][0] ) : '';
+    
+
+  $send_array[] = get_the_title(); 
+
+    $html .='<option value="'.$closest_city_num.'">'.$closest_city.'</option>';
+
+ endwhile;
+  return $html;
+}
+
+add_shortcode("ccity_post_sc", "ccity_post_sc");  //[ccity_post_sc]
+
+
+
+// function jbocook_post_event_sc(){
+//   session_start();
+//   $args = array(  
+//      'post_type' => 'jbocook_post_event',
+//      'post_status' => 'publish',
+//   );
+//   $html = "";
+//   $loop = new WP_Query( $args ); 
+
+//  $send_array = array();
+
+//  while ( $loop->have_posts() ) : $loop->the_post(); 
+
+//  $the_title =  get_the_title(); 
+
+//   $values = get_post_custom( get_the_id() );
+
+//   $featured_img = get_the_post_thumbnail_url(get_the_id(),'full');
+
+//   $offerstate = isset( $values['jbocook_offer_state'] ) ? esc_attr( $values['jbocook_offer_state'][0] ) : '';
+    
+//   $link =  get_permalink( $post->ID );
+
+//   $send_array[] = get_the_title(); 
+//     if($offerstate == $_COOKIE['state']){
+//         $html .= '<div class="offer_box">';
+//           $html .= '<a href="'.$link.'">';
+//           $html .= '<img src="'.$featured_img.'">';
+//           $html .= '</a>';
+//         $html .= '</div>';
+//     }else if($offerstate == $_GET['state']){
+//         $html .= '<div class="offer_box">';
+//           $html .= '<a href="'.$link.'">';
+//           $html .= '<img src="'.$featured_img.'">';
+//           $html .= '</a>';
+//         $html .= '</div>';
+
+//     }
+//  endwhile;
+//   return $html;
+// }
+
+// add_shortcode("jbocook_post_event_sc", "jbocook_post_event_sc");  //[jbocook_post_event_sc]
+
+
+
+function site_logo_shortcode(){
+  $logo = ( $user_logo = et_get_option( 'divi_logo' ) ) && ! empty( $user_logo )
+    ? $user_logo
+    : $template_directory_uri . '/images/logo.png';
+  
+  if($logo){
+      return esc_attr($logo);
+  }
+}
+add_shortcode('site_logo', 'site_logo_shortcode');
+//[site_logo]
+
+
+
+// Function that will return our Wordpress menu
+function site_menu_shortcode($atts, $content = null) {
+  extract(shortcode_atts(array(  
+      'menu'            => 'main-menu', 
+      'container'       => 'div', 
+      'container_class' => '', 
+      'container_id'    => '', 
+      'menu_class'      => 'menu', 
+      'menu_id'         => '',
+      'echo'            => true,
+      'fallback_cb'     => 'wp_page_menu',
+      'before'          => '',
+      'after'           => '',
+      'link_before'     => '',
+      'link_after'      => '',
+      'depth'           => 0,
+      'walker'          => '',
+      'theme_location'  => ''), 
+      $atts));
+
+  return wp_nav_menu( array( 
+      'menu'            => $menu, 
+      'container'       => $container, 
+      'container_class' => $container_class, 
+      'container_id'    => $container_id, 
+      'menu_class'      => $menu_class, 
+      'menu_id'         => $menu_id,
+      'echo'            => false,
+      'fallback_cb'     => $fallback_cb,
+      'before'          => $before,
+      'after'           => $after,
+      'link_before'     => $link_before,
+      'link_after'      => $link_after,
+      'depth'           => $depth,
+      'walker'          => $walker,
+      'theme_location'  => $theme_location));
+}
+
+add_shortcode("listmenu", "site_menu_shortcode");
+// [listmenu]
+
+
+// Function that will return our Wordpress menu
+function footer_site_menu_shortcode($atts, $content = null) {
+  extract(shortcode_atts(array(  
+    'menu'            => 'footermenu', 
+    'container'       => 'div', 
+    'container_class' => '', 
+    'container_id'    => '', 
+    'menu_class'      => 'menu', 
+    'menu_id'         => '',
+    'echo'            => true,
+    'fallback_cb'     => 'wp_page_menu',
+    'before'          => '',
+    'after'           => '',
+    'link_before'     => '',
+    'link_after'      => '',
+    'depth'           => 0,
+    'walker'          => '',
+    'theme_location'  => ''), 
+    $atts));
+ 
+ 
+  return wp_nav_menu( array( 
+    'menu'            => $menu, 
+    'container'       => $container, 
+    'container_class' => $container_class, 
+    'container_id'    => $container_id, 
+    'menu_class'      => $menu_class, 
+    'menu_id'         => $menu_id,
+    'echo'            => false,
+    'fallback_cb'     => $fallback_cb,
+    'before'          => $before,
+    'after'           => $after,
+    'link_before'     => $link_before,
+    'link_after'      => $link_after,
+    'depth'           => $depth,
+    'walker'          => $walker,
+    'theme_location'  => $theme_location));
+}
+
+add_shortcode("footer_listmenu", "footer_site_menu_shortcode");
+
+// shortcode [footer_listmenu]
+
+
+function promotion_detail_title()
+{
+  global $post;
+  $values = get_post_custom( $post->ID );
+
+  $promotion_title = get_the_title($post->ID);
+
+  return $promotion_title;
+}
+add_shortcode("promotion_detail_title", "promotion_detail_title");  //[promotion_detail_title]  
+// Main Promotion details
+
+function promotion_detail_page()
+{
+  global $post;
+  //echo  $post->ID;
+  $values = get_post_custom( $post->ID );
+
+  $promotion_title = get_the_title($post->ID);
+  $offerdesc = isset( $values['jbocook_offer_desc'] ) ? esc_attr( $values['jbocook_offer_desc'][0] ) : '';
+
+  // main promotion info
+  $html .='<div class="promotion_page_details">';
+  $html .='<div class="promotion_page_text second">';
+     $html .='<div class="promotion_text_box">';
+        $html .='<p class="heading_title">'.$promotion_title.'</p>';
+        $html .='<div class="para_points">';
+           $html .='<ul>';
+              $html .='<li>Lorem ipsum dolor sit amet</li>';
+              $html .='<li>Consectetur adipiscing elit, sed do eiusmod</li>';
+              $html .='<li>tempor incididunt ut labore</li>';
+           $html .='</ul>';
+        $html .='</div>';
+
+        // $html .='<div class="btn-cont btn_cont_white">';
+        // $html .='<a href="#" class="action-btn btn-motion_row_right">Learn More</a>';
+        // $html .='</div>';
+
+     $html .='</div>';
+  $html .='</div>';
+$html .='</div>';
+
+  return $html;
+}
+add_shortcode("promotion_detail_page", "promotion_detail_page");  //[promotion_detail_page]  
+
+// invertor detail page
+
+function invertor_detail_page(){
+
+  global $post;
+  //echo  $post->ID;
+  $values = get_post_custom( $post->ID );
+
+    // Invertor
+    $invertortitle = isset( $values['jbocook_offer_invertor_title'] ) ? esc_attr( $values['jbocook_offer_invertor_title'][0] ) : '';
+    $invertordesc01p = isset( $values['jbocook_offer_invertor_desc_01'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_01'][0] ) : '';
+    $invertordesc02p = isset( $values['jbocook_offer_invertor_desc_02'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_02'][0] ) : '';
+  $invertordesc03p = isset( $values['jbocook_offer_invertor_desc_03'] ) ? esc_attr( $values['jbocook_offer_invertor_desc_03'][0] ) : '';
+
+  $view_datasheet = get_post_meta( get_the_ID(), 'invertor_attachment', true );
+  // echo "<pre>";
+  // print_r($view_datasheet['url']);
+  // echo "<pre>";
+  // die;
+
+    // invertor details
+$html .='<div class="promotion_page_details">';
+ 
+$html .='<div class="promotion_page_text second">';
+   $html .='<div class="promotion_text_box">';
+      $html .='<p class="heading_title">'.$invertortitle.'</p>';
+      $html .='<div class="para_points">';
+         $html .='<ul>';
+            $html .='<li>'.$invertordesc01p.'</li>';
+            $html .='<li>'.$invertordesc02p.'</li>';
+            $html .='<li>'.$invertordesc03p.'</li>';
+         $html .='</ul>';
+      $html .='</div>';
+      // $html .='<div class="btn-cont">';
+      //    $html .='<a href="#" class="cta-button btn_hover">';
+      //    $html .='<span class="line-1"></span>';
+      //    $html .='<span class="line-2"></span>';
+      //    $html .='<span class="line-3"></span>';
+      //    $html .='<span class="line-4"></span>';
+      //    $html .='<span class="btn-label">Learn More</span>';
+      //    $html .='</a>';
+      // $html .='</div>';
+   $html .='</div>';
+$html .='</div>';
+   $html .='<div class="offer_box promotion_page_img right">';
+    // $html .='<a href="'.$SurL.'">';
+    $html .='<a>';
+      $html .='<img src="'.$view_datasheet['url'].'">';
+    $html .='</a>';
+  $html .='</div>';
+$html .='</div>';
+
+return $html;
+
+  
+}
+add_shortcode("invertor_detail_page", "invertor_detail_page");  //[invertor_detail_page]  
+
+
+// Battery  detail page
+
+function battery_detail_page(){
+
+  global $post;
+  //echo  $post->ID;
+  $values = get_post_custom( $post->ID );
+
+  
+    // Battery
+    $batterytitle = isset( $values['jbocook_offer_battery_title'] ) ? esc_attr( $values['jbocook_offer_battery_title'][0] ) : '';
+  $batterydesc01p = isset( $values['jbocook_offer_battery_desc_01'] ) ? esc_attr( $values['jbocook_offer_battery_desc_01'][0] ) : '';
+    $batterydesc02p = isset( $values['jbocook_offer_battery_desc_02'] ) ? esc_attr( $values['jbocook_offer_battery_desc_02'][0] ) : '';
+    $batterydesc03p = isset( $values['jbocook_offer_battery_desc_03'] ) ? esc_attr( $values['jbocook_offer_battery_desc_03'][0] ) : '';
+
+  $view_datasheet = get_post_meta( get_the_ID(), 'battery_attachment', true );
+
+    // Battery details
+$html .='<div class="promotion_page_details">';
+    $html .='<div class="offer_box promotion_page_img left">';
+    // $html .='<a href="'.$link.'">';
+    $html .='<a>';
+      $html .='<img src="'.$view_datasheet['url'].'">';
+    $html .='</a>';
+    $html .='</div>';
+$html .='<div class="promotion_page_text second">';
+   $html .='<div class="promotion_text_box">';
+      $html .='<p class="heading_title">'.$batterytitle.'</p>';
+      $html .='<div class="para_points">';
+         $html .='<ul>';
+            $html .='<li>'.$batterydesc01p.'</li>';
+            $html .='<li>'.$batterydesc02p.'</li>';
+            $html .='<li>'.$batterydesc03p.'</li>';
+         $html .='</ul>';
+      $html .='</div>';
+      // $html .='<div class="btn-cont">';
+      //    $html .='<a href="#" class="cta-button btn_hover">';
+      //    $html .='<span class="line-1"></span>';
+      //    $html .='<span class="line-2"></span>';
+      //    $html .='<span class="line-3"></span>';
+      //    $html .='<span class="line-4"></span>';
+      //    $html .='<span class="btn-label">Learn More</span>';
+      //    $html .='</a>';
+      // $html .='</div>';
+   $html .='</div>';
+$html .='</div>';
+ 
+$html .='</div>';
+
+return $html;
+  
+}
+add_shortcode("battery_detail_page", "battery_detail_page");  //[battery_detail_page]  
+
+// Warranty  detail page
+
+function warranty_detail_page(){
+
+  global $post;
+  //echo  $post->ID;
+  $values = get_post_custom( $post->ID );
+
+  
+   // Warranty
+  $warrantytitle = isset( $values['jbocook_offer_warranty_title'] ) ? esc_attr( $values['jbocook_offer_warranty_title'][0] ) : '';
+  $warrantydesc01p = isset( $values['jbocook_offer_warranty_desc_01'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_01'][0] ) : '';
+    $warrantydesc02p = isset( $values['jbocook_offer_warranty_desc_02'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_02'][0] ) : '';
+    $warrantydesc03p = isset( $values['jbocook_offer_warranty_desc_03'] ) ? esc_attr( $values['jbocook_offer_warranty_desc_03'][0] ) : '';
+  
+  $view_datasheet = get_post_meta( get_the_ID(), 'warranty_attachment', true );
+
+    // Warranty details
+$html .='<div class="promotion_page_details">';
+$html .='<div class="promotion_page_text second">';
+   $html .='<div class="promotion_text_box">';
+      $html .='<p class="heading_title">'.$warrantytitle.'</p>';
+      $html .='<div class="para_points">';
+         $html .='<ul>';
+            $html .='<li>'.$warrantydesc01p.'</li>';
+            $html .='<li>'.$warrantydesc02p.'</li>';
+            $html .='<li>'.$warrantydesc03p.'</li>';
+         $html .='</ul>';
+      $html .='</div>';
+      // $html .='<div class="btn-cont">';
+      //    $html .='<a href="#" class="cta-button btn_hover">';
+      //    $html .='<span class="line-1"></span>';
+      //    $html .='<span class="line-2"></span>';
+      //    $html .='<span class="line-3"></span>';
+      //    $html .='<span class="line-4"></span>';
+      //    $html .='<span class="btn-label">Learn More</span>';
+      //    $html .='</a>';
+      // $html .='</div>';
+   $html .='</div>';
+$html .='</div>';
+$html .='<div class="offer_box promotion_page_img right">';
+    // $html .='<a href="'.$link.'">';
+    $html .='<a>';
+      $html .='<img src="'.$view_datasheet['url'].'">';
+    $html .='</a>';
+   $html .='</div>';
+$html .='</div>';
+
+return $html;
+  
+}
+add_shortcode("warranty_detail_page", "warranty_detail_page");  //[warranty_detail_page]  
+
+// optimisers detail page
+
+function optimisers_detail_page(){
+
+  global $post;
+  //echo  $post->ID;
+  $values = get_post_custom( $post->ID );
+
+  
+   // Optimisers
+  $optimiserstitle = isset( $values['jbocook_offer_optimisers_title'] ) ? esc_attr( $values['jbocook_offer_optimisers_title'][0] ) : '';
+  $optimiserstitle = isset( $values['jbocook_offer_optimisers_title'] ) ? esc_attr( $values['jbocook_offer_optimisers_title'][0] ) : '';
+    $optimisersdesc01p = isset( $values['jbocook_offer_optimisers_desc_01'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_01'][0] ) : '';
+    $optimisersdesc02p = isset( $values['jbocook_offer_optimisers_desc_02'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_02'][0] ) : '';
+    $optimisersdesc03p = isset( $values['jbocook_offer_optimisers_desc_03'] ) ? esc_attr( $values['jbocook_offer_optimisers_desc_03'][0] ) : '';
+
+  $view_datasheet = get_post_meta( get_the_ID(), 'optimisers_attachment', true );
+
+    // invertor details
+$html .='<div class="promotion_page_details">';
+    $html .='<div class="offer_box promotion_page_img left">';
+    // $html .='<a href="'.$link.'">';
+    $html .='<a>';
+      $html .='<img src="'.$view_datasheet['url'].'">';
+    $html .='</a>';
+    $html .='</div>';
+$html .='<div class="promotion_page_text second">';
+   $html .='<div class="promotion_text_box">';
+      $html .='<p class="heading_title">'.$optimiserstitle.'</p>';
+      $html .='<div class="para_points">';
+         $html .='<ul>';
+            $html .='<li>'.$optimisersdesc01p.'</li>';
+            $html .='<li>'.$optimisersdesc02p.'</li>';
+            $html .='<li>'.$optimisersdesc03p.'</li>';
+         $html .='</ul>';
+      $html .='</div>';
+      // $html .='<div class="btn-cont">';
+      //    $html .='<a href="#" class="cta-button btn_hover">';
+      //    $html .='<span class="line-1"></span>';
+      //    $html .='<span class="line-2"></span>';
+      //    $html .='<span class="line-3"></span>';
+      //    $html .='<span class="line-4"></span>';
+      //    $html .='<span class="btn-label">Learn More</span>';
+      //    $html .='</a>';
+      // $html .='</div>';
+   $html .='</div>';
+$html .='</div>';
+ 
+$html .='</div>';
+
+return $html;
+  
+}
+add_shortcode("optimisers_detail_page", "optimisers_detail_page");  //[optimisers_detail_page]  
+
+
+
+// Navigation menu in Select State Dropdown
+
+function state_change_active(){
+
+  $active_state=array('vic','nsw','qld','sa','tas','wa');
+ 
+  
+$html .='<ul id="menu-main-menu" class="menu">';
+$html .='<li class="mega-menu menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-1983">';
+  $html .='<a href="">State</a>';
+  $html .='<ul class="sub-menu">';
+
+  foreach($active_state as $var){
+    // echo $_SESSION['state'];
+    // die;
+    if($_SESSION['state']==$var){
+      
+      // $html .='<li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item">';
+      //   $html .='<a href="?state='.$var.'">'.strtoupper($var).'</a>';
+      // $html .='</li>';
+      $html .=' <a href="?state='.$var.'">';
+        $html .='<li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item">'.strtoupper($var).'</li>';
+      $html .='</a>';
+
+    }else{
+
+      // $html .='<li class="menu-item menu-item-type-custom menu-item-object-custom">';
+      //   $html .='<a href="?state='.$var.'">'.strtoupper($var).'</a>';
+      // $html .='</li>';
+      $html .=' <a href="?state='.$var.'">';
+        $html .='<li class="menu-item menu-item-type-custom menu-item-object-custom">'.strtoupper($var).'</li>';
+      $html .='</a>';
+
+    }
+  
+  }
+ 
+  $html .='</ul>';
+$html .='</li>';
+$html .='</ul>';
+
+
+return $html;
+
+}
+add_shortcode("state_change_active", "state_change_active");  //[state_change_active]
